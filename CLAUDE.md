@@ -1,4 +1,4 @@
-# CLAUDE.md — 客製化魔術方塊模擬網站
+# CLAUDE.md — 小丸號客製方塊模擬器
 
 每個 session 開工前先讀：**本檔 → docs/07-handoff.md（目前進度）**。其餘檔案按需要查。
 
