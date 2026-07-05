@@ -3,11 +3,17 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import RubiksCube from './RubiksCube.jsx'
 import { FACE_COLORS } from './cubeGeometry.js'
-import { FACE_LABELS, MAX_FILE_SIZE_MB, validateImageFile } from './faceImages.js'
+import {
+  FACE_LABELS,
+  MAX_FILE_SIZE_MB,
+  MIN_SCALE,
+  MAX_SCALE,
+  validateImageFile,
+} from './faceImages.js'
 import './App.css'
 
 export default function App() {
-  // { front: objectURL, ... }；沒選圖的面不會有 key
+  // { front: { url, imgW, imgH, scale, panX, panY }, ... }；沒選圖的面不會有 key
   const [faceImages, setFaceImages] = useState({})
   const [error, setError] = useState('')
 
@@ -20,55 +26,122 @@ export default function App() {
       return
     }
     setError('')
-    setFaceImages((prev) => {
-      if (prev[face]) URL.revokeObjectURL(prev[face])
-      return { ...prev, [face]: URL.createObjectURL(file) }
-    })
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      setFaceImages((prev) => {
+        if (prev[face]) URL.revokeObjectURL(prev[face].url)
+        return {
+          ...prev,
+          [face]: {
+            url,
+            imgW: img.naturalWidth,
+            imgH: img.naturalHeight,
+            scale: 1,
+            panX: 0.5,
+            panY: 0.5,
+          },
+        }
+      })
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      setError(`${FACE_LABELS[face]}：無法讀取這個檔案`)
+    }
+    img.src = url
   }
 
   function handleClear(face) {
     setError('')
     setFaceImages((prev) => {
       if (!prev[face]) return prev
-      URL.revokeObjectURL(prev[face])
+      URL.revokeObjectURL(prev[face].url)
       const next = { ...prev }
       delete next[face]
       return next
     })
   }
 
+  function updateCrop(face, key, value) {
+    setFaceImages((prev) =>
+      prev[face] ? { ...prev, [face]: { ...prev[face], [key]: value } } : prev
+    )
+  }
+
   return (
     <div className="app">
       <div className="panel">
-        <h1>客製化魔術方塊</h1>
+        <h1>小丸號客製方塊模擬器</h1>
         <p className="hint">拖曳旋轉方塊，選圖片貼到各面（jpg/png，{MAX_FILE_SIZE_MB}MB 以內）</p>
         {Object.keys(FACE_LABELS).map((face) => (
-          <div className="face-row" key={face}>
-            <span
-              className="swatch"
-              style={{ background: FACE_COLORS[face] }}
-              aria-hidden="true"
-            />
-            <span className="face-name">{FACE_LABELS[face]}</span>
-            <label className="btn">
-              {faceImages[face] ? '換圖' : '選圖'}
-              <input
-                type="file"
-                accept="image/jpeg,image/png"
-                data-face={face}
-                onChange={(e) => {
-                  handleSelect(face, e.target.files)
-                  e.target.value = '' // 讓同一張圖可以重選
-                }}
+          <div className="face-block" key={face}>
+            <div className="face-row">
+              <span
+                className="swatch"
+                style={{ background: FACE_COLORS[face] }}
+                aria-hidden="true"
               />
-            </label>
+              <span className="face-name">{FACE_LABELS[face]}</span>
+              <label className="btn">
+                {faceImages[face] ? '換圖' : '選圖'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  data-face={face}
+                  onChange={(e) => {
+                    handleSelect(face, e.target.files)
+                    e.target.value = '' // 讓同一張圖可以重選
+                  }}
+                />
+              </label>
+              {faceImages[face] && (
+                <>
+                  <img className="thumb" src={faceImages[face].url} alt="" />
+                  <button className="btn btn-clear" onClick={() => handleClear(face)}>
+                    清除
+                  </button>
+                </>
+              )}
+            </div>
             {faceImages[face] && (
-              <>
-                <img className="thumb" src={faceImages[face]} alt="" />
-                <button className="btn btn-clear" onClick={() => handleClear(face)}>
-                  清除
-                </button>
-              </>
+              <div className="crop-row">
+                <label>
+                  縮放
+                  <input
+                    type="range"
+                    min={MIN_SCALE}
+                    max={MAX_SCALE}
+                    step="0.05"
+                    value={faceImages[face].scale}
+                    data-crop={`${face}-scale`}
+                    onChange={(e) => updateCrop(face, 'scale', Number(e.target.value))}
+                  />
+                </label>
+                <label>
+                  左右
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={faceImages[face].panX}
+                    data-crop={`${face}-panX`}
+                    onChange={(e) => updateCrop(face, 'panX', Number(e.target.value))}
+                  />
+                </label>
+                <label>
+                  上下
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={faceImages[face].panY}
+                    data-crop={`${face}-panY`}
+                    onChange={(e) => updateCrop(face, 'panY', Number(e.target.value))}
+                  />
+                </label>
+              </div>
             )}
           </div>
         ))}

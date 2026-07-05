@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { validateImageFile, MAX_FILE_SIZE, MAX_FILE_SIZE_MB, FACE_LABELS } from './faceImages.js'
+import {
+  validateImageFile,
+  computeCropWindow,
+  getTileTransform,
+  MAX_FILE_SIZE,
+  MAX_FILE_SIZE_MB,
+  MAX_SCALE,
+  FACE_LABELS,
+} from './faceImages.js'
 import { getFaceTile, FACE_ORDER, generateCubies } from './cubeGeometry.js'
 
 describe('validateImageFile 檔案驗證', () => {
@@ -31,6 +39,69 @@ describe('validateImageFile 檔案驗證', () => {
   it('拒絕空值或缺欄位的輸入', () => {
     expect(validateImageFile(null).ok).toBe(false)
     expect(validateImageFile({}).ok).toBe(false)
+  })
+})
+
+describe('computeCropWindow 裁切視窗', () => {
+  it('正方形圖、預設值 → 顯示整張圖', () => {
+    expect(computeCropWindow(500, 500)).toEqual({ x: 0, y: 0, w: 1, h: 1 })
+  })
+
+  it('橫的長方形圖 → 自動取置中正方形（修正拉伸變形）', () => {
+    // 400x200：正方形邊長 200，UV 寬 = 200/400 = 0.5，水平置中
+    expect(computeCropWindow(400, 200)).toEqual({ x: 0.25, y: 0, w: 0.5, h: 1 })
+  })
+
+  it('直的長方形圖 → 同理垂直置中', () => {
+    expect(computeCropWindow(200, 400)).toEqual({ x: 0, y: 0.25, w: 1, h: 0.5 })
+  })
+
+  it('縮放 2 倍、置中 → 視窗變一半、留在中間', () => {
+    expect(computeCropWindow(500, 500, 2)).toEqual({ x: 0.25, y: 0.25, w: 0.5, h: 0.5 })
+  })
+
+  it('pan 推到極端也不會超出圖片範圍', () => {
+    const atMax = computeCropWindow(400, 200, 2, 1, 1)
+    expect(atMax.x + atMax.w).toBeCloseTo(1, 10)
+    expect(atMax.y + atMax.h).toBeCloseTo(1, 10)
+    const atMin = computeCropWindow(400, 200, 2, 0, 0)
+    expect(atMin.x).toBe(0)
+    expect(atMin.y).toBe(0)
+  })
+
+  it('scale 超出範圍會被夾回上限', () => {
+    const clamped = computeCropWindow(500, 500, 99)
+    expect(clamped.w).toBeCloseTo(1 / MAX_SCALE, 10)
+  })
+})
+
+describe('getTileTransform 貼紙格變換', () => {
+  const full = { x: 0, y: 0, w: 1, h: 1 }
+
+  it('整張圖時，左下格＝offset 0、repeat 1/3；右上格＝offset 2/3', () => {
+    expect(getTileTransform(full, { col: 0, row: 0 })).toEqual({
+      repeatX: 1 / 3,
+      repeatY: 1 / 3,
+      offsetX: 0,
+      offsetY: 0,
+    })
+    const topRight = getTileTransform(full, { col: 2, row: 2 })
+    expect(topRight.offsetX).toBeCloseTo(2 / 3, 10)
+    expect(topRight.offsetY).toBeCloseTo(2 / 3, 10)
+  })
+
+  it('九格剛好無縫拼滿整個視窗', () => {
+    const win = { x: 0.25, y: 0, w: 0.5, h: 1 }
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const t = getTileTransform(win, { col, row })
+        expect(t.offsetX).toBeCloseTo(win.x + (col * win.w) / 3, 10)
+        expect(t.offsetX + t.repeatX).toBeLessThanOrEqual(win.x + win.w + 1e-10)
+      }
+    }
+    const last = getTileTransform(win, { col: 2, row: 2 })
+    expect(last.offsetX + last.repeatX).toBeCloseTo(win.x + win.w, 10)
+    expect(last.offsetY + last.repeatY).toBeCloseTo(win.y + win.h, 10)
   })
 })
 
