@@ -4,9 +4,18 @@
 
 ---
 
-## Session 3 — 2026-07-05（首個 Code 網頁版 session：重建 Phase 1 骨架，開 PR）
+## Session 3 — 2026-07-05（首個 Code 網頁版 session：骨架重建＋圖片上傳貼面）
 
-**做了什麼**：執行 Session 2「下一步」第 1 點。檢查結果：repo 只有制度文件，**沒有程式碼**，故依 handoff 規格重建 Phase 1 骨架並開 PR：
+**做了什麼（第二部分：Phase 1 子任務 2「圖片上傳貼面」）**：
+- 骨架 PR #1 已 merge，使用者親自驗收 Pages 網址通過（3D 方塊可順暢旋轉）。
+- docs/03 模型名稱不符 → 使用者決定**先不動**（Fable 5 僅短期可用，之後再說）。
+- 新增 `src/faceImages.js`（檔案驗證純函式：jpg/png、≤5MB）＋ `getFaceTile`（cubeGeometry.js，九宮格對應，依 three.js BoxGeometry UV 方向推導）。
+- `App.jsx` 加左上控制面板：六面各自選圖/換圖/清除、縮圖預覽、中文錯誤訊息；手機版面板貼底部（原生 CSS，App.css）。
+- `RubiksCube.jsx`：每面圖片切九宮格貼到 9 格貼紙（texture clone + offset/repeat），沒圖的面維持素色。
+- 測試從 6 條增至 16 條（驗證邏輯＋九宮格對應的完整覆蓋）。
+- **踩坑（已解）**：材質從無貼圖變有貼圖時 R3F 不會自動重編 shader，畫面一片灰白。解法：meshStandardMaterial 加 `key={map.uuid}` 強制重建材質。已在沙箱用 Playwright 實際上傳圖片截圖驗證六面方向全部正確。
+
+**做了什麼（第一部分：重建 Phase 1 骨架）**：檢查發現 repo 只有制度文件、沒有程式碼，依 handoff 規格重建並開 PR：
 - `package.json`（Vite + React 18 + three + @react-three/fiber + @react-three/drei + Vitest，全在 docs/02 白名單）
 - `src/cubeGeometry.js` 純函式資料層（27 顆、傳統六色、內側深色）＋ `src/cubeGeometry.test.js` 6 條測試
 - `src/RubiksCube.jsx`、`src/App.jsx`（OrbitControls 拖曳旋轉、關 pan）、`src/main.jsx`、`index.html`
@@ -15,21 +24,20 @@
 - `.gitignore`
 
 **目前狀態**：
-- 沙箱（Claude Code 網頁版，Node 22）實跑：`npm test` **6/6 綠**、`npm run build` **成功**（bundle 975KB，three.js 本體大，沿用 Session 1 判斷暫不處理）。
-- PR 已開（分支 `claude/handoff-session-2-phase-1-2ngi22`），等使用者 merge。
-- **CI 綠燈與 Pages 網址仍未確認**——要等 merge 進 main 後才會跑部署。使用者需先在 repo Settings → Pages 把 Source 設為 GitHub Actions。
-- 環境核對（docs/06 第 1 項）：本 session 實際模型為 `claude-fable-5`，與 docs/03 寫的 Sonnet/Opus 調度表不符 → 已向使用者回報，**docs/03 未改**，等使用者決定。
+- 骨架（PR #1）：已 merge、Pages 部署成功、使用者驗收通過。✅
+- 圖片上傳貼面：沙箱實跑 `npm test` **16/16 綠**、`npm run build` 成功；Playwright 端到端截圖驗證六面貼圖方向正確、gif 與超大檔正確被擋。PR 已開，等使用者 merge 後線上驗收。
+- bundle 975KB（three.js 本體大），沿用 Session 1 判斷暫不處理。
+- docs/03 模型名稱與實際環境（claude-fable-5）不符：使用者已決定**先不動**。
 
 **下一步**：
-1. 使用者 merge PR → 確認 Actions 綠燈 → Settings → Pages 選 GitHub Actions → 拿到 Pages 網址，回填到 README 或 handoff。
-2. 若使用者同意，修 docs/03 的模型名稱（提案：把調度表改成以介面實際可選模型為準）。
-3. 骨架驗收全過後，下個子任務：Phase 1 圖片上傳貼面（jpg/png ≤5MB、六面各自可不同圖、純瀏覽器端）。
+1. 使用者 merge 圖片上傳 PR → Actions 綠燈 → 到 Pages 網址做人工驗收（三步驟見 PR 描述）。
+2. 下個子任務：Phase 1 圖片在面上的**縮放/位移簡單裁切**（docs/01 Phase 1 最後一項）。做完即可驗收「手機和電腦瀏覽器都能操作」整個 Phase 1。
+3. 之後進 Phase 2（送件表單＋Supabase＋Resend，需使用者先開帳號）。
 
 **未解問題 / 待使用者決定**：
-- docs/03 模型名稱與實際環境不符，如何修（見上）。
 - Supabase / Resend 帳號（Phase 2 才需要）。
 
-**本次教訓**：無踩坑。Session 1 的規格記錄夠細，重建一次到位。
+**本次教訓**：R3F 材質後掛貼圖不會自動重編 shader（見上方踩坑），已用 key 重建法解決；此模式已可套用到之後所有動態換圖功能。沙箱 Playwright 截圖驗證非常有用，單元測試驗不出的視覺問題（貼圖方向、shader 沒重編）都靠它抓到。
 
 ---
 
