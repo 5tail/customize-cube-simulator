@@ -48,3 +48,31 @@ export function generateCubies() {
 export function countStickers(cubie) {
   return cubie.colors.filter((c) => c !== INNER_COLOR).length
 }
+
+/**
+ * 算出某顆小方塊在指定面上是九宮格的哪一格。
+ * 回傳 { col, row }（各 0–2，col 由左到右、row 由下到上，
+ * 以「正對著那一面看」的方向為準），不在那一面上則回傳 null。
+ *
+ * col/row 的換算依 three.js BoxGeometry 各面的 UV 方向推導：
+ * 每一面的貼圖 u 軸即該面視角的「右」、v 軸即「上」。
+ */
+export function getFaceTile(face, position) {
+  const [x, y, z] = position
+  switch (face) {
+    case 'right':
+      return x === 1 ? { col: 1 - z, row: y + 1 } : null
+    case 'left':
+      return x === -1 ? { col: z + 1, row: y + 1 } : null
+    case 'up':
+      return y === 1 ? { col: x + 1, row: 1 - z } : null
+    case 'down':
+      return y === -1 ? { col: x + 1, row: z + 1 } : null
+    case 'front':
+      return z === 1 ? { col: x + 1, row: y + 1 } : null
+    case 'back':
+      return z === -1 ? { col: 1 - x, row: y + 1 } : null
+    default:
+      return null
+  }
+}
