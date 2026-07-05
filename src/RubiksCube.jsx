@@ -3,9 +3,11 @@ import * as THREE from 'three'
 import { generateCubies, FACE_ORDER, getFaceTile } from './cubeGeometry.js'
 import { createRoundedBoxGeometry } from './roundedBoxGeometry.js'
 
-const CUBIE_SIZE = 0.95 // 略小於 1，讓小方塊之間有縫，看得出是 27 顆
-// 小方塊邊緣圓角半徑（像真實魔方零件的微圓角）；可用 ?radius=0.08 暫時覆蓋方便比較
-const EDGE_RADIUS = Number(new URLSearchParams(window.location.search).get('radius')) || 0.08
+// 縫隙寬 = 1 - CUBIE_SIZE。使用者 2026-07-05 定案：很窄的縫（0.015）
+// ?size=0.95 之類的網址參數可暫時覆蓋方便比較；圓角半徑同理用 ?radius=
+const urlParams = new URLSearchParams(window.location.search)
+const CUBIE_SIZE = Number(urlParams.get('size')) || 0.985
+const EDGE_RADIUS = Number(urlParams.get('radius')) || 0.08
 
 // 27 顆共用同一份幾何
 const cubieGeometry = createRoundedBoxGeometry(CUBIE_SIZE, EDGE_RADIUS)
