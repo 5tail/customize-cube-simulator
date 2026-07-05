@@ -57,6 +57,13 @@ handoff 更新應該已包含在 PR 裡（docs/03 A-4）。若 session 中途中
 - 模型自己建議換 Opus、或同一問題連錯兩次 → 開新 session 用 Opus（`/model` 切換），把失敗經過一起貼給它。
 - 一個 session 只做一件事，做完收尾換新的。
 
+## 改價錢（不用找模型，自己 30 秒搞定）
+
+1. 開 repo 裡的 **`src/pricing.json`** → 點右上鉛筆（Edit）。
+2. 改數字：`tiers` 是數量級距（`minQty` 顆以上適用 `unitPrice` 單價）；`options` 是加購選項（`perUnit`＝每顆加價，`label`＝畫面上顯示的字）。
+3. 按 **Commit changes** → 約一分鐘後網站自動更新。
+4. 只改數字和文字，不要動引號、逗號、括號；改壞了測試會紅燈擋下來，不會上線。
+
 ## 什麼時候需要你本人動手（模型做不到的事）
 - 按 Merge（每個 PR 都要你過目才進 main）。
 - GitHub repo 設定（Public/Pages）、註冊 Supabase / Resend / Cloudflare 帳號（Phase 2 前）。

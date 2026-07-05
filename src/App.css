@@ -135,6 +135,57 @@
   margin: 6px 0 0;
 }
 
+.quote {
+  border-top: 1px solid #ddd;
+  margin-top: 10px;
+  padding-top: 8px;
+}
+
+.quote h2 {
+  font-size: 14px;
+  margin: 0 0 6px;
+}
+
+.qty-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.qty-row input {
+  width: 72px;
+  padding: 3px 6px;
+  font-size: 13px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+}
+
+.opt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.quote-line {
+  font-size: 13px;
+  margin: 8px 0 2px;
+}
+
+.quote-line .hint {
+  font-size: 11px;
+}
+
+.quote-total {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
 /* 手機直向：面板改貼底部、橫向不擋畫面太多 */
 @media (max-width: 600px) {
   .panel {
