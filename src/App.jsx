@@ -11,6 +11,8 @@ import {
   MAX_ROTATION,
   validateImageFile,
 } from './faceImages.js'
+import { computeQuote, toggleOption } from './quote.js'
+import pricing from './pricing.json'
 import './App.css'
 
 export default function App() {
@@ -18,7 +20,36 @@ export default function App() {
   const [faceImages, setFaceImages] = useState({})
   const [error, setError] = useState('')
   const cubeRef = useRef(null)
+  const glRef = useRef(null)
   const [scrambling, setScrambling] = useState(false)
+  const [qty, setQty] = useState(1)
+  const [selectedOptions, setSelectedOptions] = useState([])
+
+  const quote = computeQuote(pricing, qty, selectedOptions)
+  const money = (n) => `${pricing.currency}${n.toLocaleString('zh-TW')}`
+
+  function handleScreenshot() {
+    const canvas = glRef.current?.domElement
+    if (!canvas) return
+    const stamp = new Date()
+      .toISOString()
+      .slice(0, 16)
+      .replace('T', '_')
+      .replaceAll(':', '')
+      .replaceAll('-', '')
+    // 用 Blob 而不是 dataURL：檔名才會生效，大圖也不受 dataURL 長度限制
+    canvas.toBlob((blob) => {
+      if (!blob) return
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.download = `小丸號方塊模擬_${stamp}.png`
+      link.href = url
+      document.body.appendChild(link) // Firefox 需要掛進頁面 download 屬性才生效
+      link.click()
+      link.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 10000)
+    }, 'image/png')
+  }
 
   function handleSelect(face, fileList) {
     const file = fileList && fileList[0]
@@ -87,6 +118,9 @@ export default function App() {
           </button>
           <button className="btn" onClick={() => cubeRef.current?.reset()}>
             復原
+          </button>
+          <button className="btn" onClick={handleScreenshot}>
+            截圖下載
           </button>
         </div>
         {Object.keys(FACE_LABELS).map((face) => (
@@ -175,9 +209,61 @@ export default function App() {
           </div>
         ))}
         {error && <p className="error">{error}</p>}
+
+        <div className="quote">
+          <h2>訂做費用試算</h2>
+          <label className="qty-row">
+            數量
+            <input
+              type="number"
+              min="1"
+              value={qty}
+              data-quote="qty"
+              onChange={(e) => setQty(Number(e.target.value))}
+            />
+            顆
+          </label>
+          {pricing.options.map((opt) => (
+            <label className="opt-row" key={opt.id}>
+              <input
+                type="checkbox"
+                checked={selectedOptions.includes(opt.id)}
+                data-quote={opt.id}
+                onChange={() =>
+                  setSelectedOptions((prev) => toggleOption(pricing.options, prev, opt.id))
+                }
+              />
+              {opt.label}（每顆 +{money(opt.perUnit)}）
+            </label>
+          ))}
+          <p className="quote-line">
+            單價 {money(quote.perUnit)}／顆
+            {quote.optionsPerUnit > 0 && (
+              <span className="hint">
+                （{money(quote.tier.unitPrice)} ＋加購 {money(quote.optionsPerUnit)}）
+              </span>
+            )}
+          </p>
+          <p className="quote-total" data-quote="total">
+            總計 {money(quote.total)}
+          </p>
+          {quote.next && (
+            <p className="hint">
+              滿 {quote.next.minQty} 顆單價降為 {money(quote.next.unitPrice)}／顆
+            </p>
+          )}
+          <p className="hint">{pricing.note}</p>
+        </div>
       </div>
 
-      <Canvas camera={{ position: [4.5, 4.5, 4.5], fov: 45 }}>
+      <Canvas
+        camera={{ position: [4.5, 4.5, 4.5], fov: 45 }}
+        // 截圖需要保留繪圖緩衝，否則 toDataURL 會是空白
+        gl={{ preserveDrawingBuffer: true }}
+        onCreated={(state) => {
+          glRef.current = state.gl
+        }}
+      >
         <ambientLight intensity={0.9} />
         <directionalLight position={[5, 8, 5]} intensity={1.2} />
         <directionalLight position={[-5, -3, -5]} intensity={0.4} />
