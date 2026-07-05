@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { useFrame } from '@react-three/fiber'
 import { generateCubies, FACE_ORDER, getFaceTile } from './cubeGeometry.js'
 import { createRoundedBoxGeometry } from './roundedBoxGeometry.js'
 import { computeCropWindow, computeTileMatrix } from './faceImages.js'
+import { createSolvedState, applyMove, randomScramble } from './cubeState.js'
 
 // 縫隙寬 = 1 - CUBIE_SIZE。使用者 2026-07-05 定案：很窄的縫（0.015）
 // ?size=0.95 之類的網址參數可暫時覆蓋方便比較；圓角半徑同理用 ?radius=
@@ -30,12 +32,84 @@ function StickerMaterial({ slot, color, map }) {
   )
 }
 
+const CUBIE_POSITIONS = cubies.map((c) => c.position)
+const AXIS_VECTORS = {
+  x: new THREE.Vector3(1, 0, 0),
+  y: new THREE.Vector3(0, 1, 0),
+  z: new THREE.Vector3(0, 0, 1),
+}
+const AXIS_INDEX = { x: 0, y: 1, z: 2 }
+const TURN_SPEED = 9 // 弧度/秒：一個 90 度轉約 0.17 秒
+
 /**
- * faceImages: { front: { url, imgW, imgH, scale, panX, panY }, ... }
+ * faceImages: { front: { url, imgW, imgH, scale, panX, panY, rot }, ... }
  * 沒選圖的面沒有 key。
+ * ref 提供 scramble() / reset()；onBusyChange(bool) 通知動畫進行中。
  */
-export default function RubiksCube({ faceImages = {} }) {
+const RubiksCube = forwardRef(function RubiksCube({ faceImages = {}, onBusyChange }, ref) {
   const [textures, setTextures] = useState({})
+
+  // ---- 單層轉動（打亂/復原）----
+  const meshRefs = useRef([]) // 27 顆 mesh
+  const stateRef = useRef(createSolvedState(CUBIE_POSITIONS)) // 邏輯狀態
+  const queueRef = useRef([]) // 待執行的步驟
+  const activeRef = useRef(null) // { move, angle }
+  const tmpQuat = useRef(new THREE.Quaternion()).current
+  const baseQuat = useRef(new THREE.Quaternion()).current
+
+  // 把邏輯狀態一次寫回全部 27 顆 mesh
+  function syncMeshes() {
+    stateRef.current.forEach((c, i) => {
+      const mesh = meshRefs.current[i]
+      if (!mesh) return
+      mesh.position.set(c.pos[0], c.pos[1], c.pos[2])
+      mesh.quaternion.set(c.quat[0], c.quat[1], c.quat[2], c.quat[3])
+    })
+  }
+
+  useImperativeHandle(ref, () => ({
+    scramble() {
+      if (activeRef.current) return // 動畫中不重複觸發
+      queueRef.current = randomScramble(18)
+      activeRef.current = { move: queueRef.current.shift(), angle: 0 }
+      onBusyChange?.(true)
+    },
+    reset() {
+      queueRef.current = []
+      activeRef.current = null
+      stateRef.current = createSolvedState(CUBIE_POSITIONS)
+      syncMeshes()
+      onBusyChange?.(false)
+    },
+  }))
+
+  useFrame((_, delta) => {
+    const active = activeRef.current
+    if (!active) return
+    active.angle = Math.min(active.angle + TURN_SPEED * delta, Math.PI / 2)
+    const { axis, layer, dir } = active.move
+    const ai = AXIS_INDEX[axis]
+    tmpQuat.setFromAxisAngle(AXIS_VECTORS[axis], dir * active.angle)
+    stateRef.current.forEach((c, i) => {
+      if (c.pos[ai] !== layer) return
+      const mesh = meshRefs.current[i]
+      if (!mesh) return
+      mesh.position.set(c.pos[0], c.pos[1], c.pos[2]).applyQuaternion(tmpQuat)
+      baseQuat.set(c.quat[0], c.quat[1], c.quat[2], c.quat[3])
+      mesh.quaternion.copy(tmpQuat).multiply(baseQuat)
+    })
+    if (active.angle >= Math.PI / 2 - 1e-9) {
+      stateRef.current = applyMove(stateRef.current, active.move)
+      syncMeshes()
+      const next = queueRef.current.shift()
+      if (next) {
+        activeRef.current = { move: next, angle: 0 }
+      } else {
+        activeRef.current = null
+        onBusyChange?.(false)
+      }
+    }
+  })
 
   // 只有「圖片本身」換了才重新載入貼圖；拉滑桿（裁切參數）不觸發
   const urlKey = FACE_ORDER.map((f) => faceImages[f]?.url || '').join('|')
@@ -116,8 +190,13 @@ export default function RubiksCube({ faceImages = {} }) {
 
   return (
     <group>
-      {cubies.map((cubie) => (
-        <mesh key={cubie.position.join(',')} position={cubie.position} geometry={cubieGeometry}>
+      {cubies.map((cubie, ci) => (
+        <mesh
+          key={cubie.position.join(',')}
+          ref={(el) => (meshRefs.current[ci] = el)}
+          position={cubie.position}
+          geometry={cubieGeometry}
+        >
           {cubie.colors.map((color, i) => {
             const face = FACE_ORDER[i]
             const tile = getFaceTile(face, cubie.position)
@@ -129,4 +208,6 @@ export default function RubiksCube({ faceImages = {} }) {
       ))}
     </group>
   )
-}
+})
+
+export default RubiksCube
