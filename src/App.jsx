@@ -21,6 +21,7 @@ export default function App() {
   const [error, setError] = useState('')
   const cubeRef = useRef(null)
   const glRef = useRef(null)
+  const controlsRef = useRef(null)
   const [scrambling, setScrambling] = useState(false)
   const [qty, setQty] = useState(1)
   const [selectedOptions, setSelectedOptions] = useState([])
@@ -267,9 +268,14 @@ export default function App() {
         <ambientLight intensity={0.9} />
         <directionalLight position={[5, 8, 5]} intensity={1.2} />
         <directionalLight position={[-5, -3, -5]} intensity={0.4} />
-        <RubiksCube ref={cubeRef} faceImages={faceImages} onBusyChange={setScrambling} />
-        {/* 只允許拖曳旋轉與縮放，關掉平移避免方塊被拖出畫面 */}
-        <OrbitControls enablePan={false} minDistance={4} maxDistance={12} />
+        <RubiksCube
+          ref={cubeRef}
+          faceImages={faceImages}
+          onBusyChange={setScrambling}
+          controlsRef={controlsRef}
+        />
+        {/* 按空白處拖＝轉視角；按方塊上拖＝撥層（撥層時 controls 會被暫時關閉） */}
+        <OrbitControls ref={controlsRef} enablePan={false} minDistance={4} maxDistance={12} />
       </Canvas>
     </div>
   )
