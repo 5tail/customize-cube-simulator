@@ -71,7 +71,7 @@ export default function App() {
   return (
     <div className="app">
       <div className="panel">
-        <h1>客製化魔術方塊</h1>
+        <h1>小丸號客製方塊模擬器</h1>
         <p className="hint">拖曳旋轉方塊，選圖片貼到各面（jpg/png，{MAX_FILE_SIZE_MB}MB 以內）</p>
         {Object.keys(FACE_LABELS).map((face) => (
           <div className="face-block" key={face}>
