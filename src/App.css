@@ -84,6 +84,22 @@
   margin-bottom: 4px;
 }
 
+.actions {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.actions .btn {
+  flex: 1;
+  text-align: center;
+}
+
+.actions .btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .crop-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

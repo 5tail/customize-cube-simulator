@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import RubiksCube from './RubiksCube.jsx'
@@ -14,9 +14,11 @@ import {
 import './App.css'
 
 export default function App() {
-  // { front: { url, imgW, imgH, scale, panX, panY }, ... }；沒選圖的面不會有 key
+  // { front: { url, imgW, imgH, scale, panX, panY, rot }, ... }；沒選圖的面不會有 key
   const [faceImages, setFaceImages] = useState({})
   const [error, setError] = useState('')
+  const cubeRef = useRef(null)
+  const [scrambling, setScrambling] = useState(false)
 
   function handleSelect(face, fileList) {
     const file = fileList && fileList[0]
@@ -75,6 +77,18 @@ export default function App() {
       <div className="panel">
         <h1>小丸號客製方塊模擬器</h1>
         <p className="hint">拖曳旋轉方塊，選圖片貼到各面（jpg/png，{MAX_FILE_SIZE_MB}MB 以內）</p>
+        <div className="actions">
+          <button
+            className="btn"
+            disabled={scrambling}
+            onClick={() => cubeRef.current?.scramble()}
+          >
+            {scrambling ? '打亂中…' : '打亂'}
+          </button>
+          <button className="btn" onClick={() => cubeRef.current?.reset()}>
+            復原
+          </button>
+        </div>
         {Object.keys(FACE_LABELS).map((face) => (
           <div className="face-block" key={face}>
             <div className="face-row">
@@ -167,7 +181,7 @@ export default function App() {
         <ambientLight intensity={0.9} />
         <directionalLight position={[5, 8, 5]} intensity={1.2} />
         <directionalLight position={[-5, -3, -5]} intensity={0.4} />
-        <RubiksCube faceImages={faceImages} />
+        <RubiksCube ref={cubeRef} faceImages={faceImages} onBusyChange={setScrambling} />
         {/* 只允許拖曳旋轉與縮放，關掉平移避免方塊被拖出畫面 */}
         <OrbitControls enablePan={false} minDistance={4} maxDistance={12} />
       </Canvas>
