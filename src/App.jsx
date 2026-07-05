@@ -25,6 +25,10 @@ export default function App() {
   const [scrambling, setScrambling] = useState(false)
   const [qty, setQty] = useState(1)
   const [selectedOptions, setSelectedOptions] = useState([])
+  // 手機上面板預設收合（避免擋到方塊）；電腦預設展開
+  const [panelOpen, setPanelOpen] = useState(
+    () => window.matchMedia('(min-width: 601px)').matches
+  )
 
   const quote = computeQuote(pricing, qty, selectedOptions)
   const money = (n) => `${pricing.currency}${n.toLocaleString('zh-TW')}`
@@ -106,8 +110,17 @@ export default function App() {
 
   return (
     <div className="app">
-      <div className="panel">
-        <h1>小丸號客製方塊模擬器</h1>
+      <div className={panelOpen ? 'panel' : 'panel panel-closed'}>
+        <button
+          className="panel-header"
+          onClick={() => setPanelOpen((v) => !v)}
+          aria-expanded={panelOpen}
+        >
+          <span className="panel-title">小丸號客製方塊模擬器</span>
+          <span className="panel-arrow">{panelOpen ? '▼ 收合' : '▲ 展開'}</span>
+        </button>
+        {panelOpen && (
+        <div className="panel-body">
         <p className="hint">拖曳旋轉方塊，選圖片貼到各面（jpg/png，{MAX_FILE_SIZE_MB}MB 以內）</p>
         <div className="actions">
           <button
@@ -254,7 +267,25 @@ export default function App() {
             </p>
           )}
           <p className="hint">{pricing.note}</p>
+          <div className="contact">
+            <p className="contact-title">點我諮詢客服小幫手</p>
+            <div className="contact-links">
+              <a className="btn" href={`mailto:${pricing.contact.email}`}>
+                ✉️ Email
+              </a>
+              <a
+                className="btn"
+                href={pricing.contact.lineUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                💬 LINE
+              </a>
+            </div>
+          </div>
         </div>
+        </div>
+        )}
       </div>
 
       <Canvas
@@ -263,6 +294,10 @@ export default function App() {
         gl={{ preserveDrawingBuffer: true }}
         onCreated={(state) => {
           glRef.current = state.gl
+          // 窄螢幕（手機直向）鏡頭拉遠，方塊才不會超出左右邊緣
+          if (state.size.width / state.size.height < 0.7) {
+            state.camera.position.setLength(10.5)
+          }
         }}
       >
         <ambientLight intensity={0.9} />
