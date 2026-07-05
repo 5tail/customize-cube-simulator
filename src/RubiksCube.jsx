@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
 import { generateCubies, FACE_ORDER, getFaceTile } from './cubeGeometry.js'
 import { createRoundedBoxGeometry } from './roundedBoxGeometry.js'
-import { computeCropWindow, getTileTransform } from './faceImages.js'
+import { computeCropWindow, computeTileMatrix } from './faceImages.js'
 
 // 縫隙寬 = 1 - CUBIE_SIZE。使用者 2026-07-05 定案：很窄的縫（0.015）
 // ?size=0.95 之類的網址參數可暫時覆蓋方便比較；圓角半徑同理用 ?radius=
@@ -83,6 +83,8 @@ export default function RubiksCube({ faceImages = {} }) {
         const t = tex.clone()
         t.wrapS = THREE.ClampToEdgeWrapping
         t.wrapT = THREE.ClampToEdgeWrapping
+        // UV 變換（含旋轉）由我們自己算好整個矩陣塞進去，不用內建的 offset/repeat
+        t.matrixAutoUpdate = false
         t.needsUpdate = true
         return t
       })
@@ -96,7 +98,7 @@ export default function RubiksCube({ faceImages = {} }) {
     }
   }, [tileTextures])
 
-  // 拉滑桿時只改各格貼圖的 offset/repeat（改 uniform，不重傳圖片、不重建材質）
+  // 拉滑桿時只改各格貼圖的 UV 矩陣（改 uniform，不重傳圖片、不重建材質）
   useEffect(() => {
     for (const face of FACE_ORDER) {
       const arr = tileTextures[face]
@@ -105,10 +107,8 @@ export default function RubiksCube({ faceImages = {} }) {
       const win = computeCropWindow(info.imgW, info.imgH, info.scale, info.panX, info.panY)
       for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
-          const tr = getTileTransform(win, { col, row })
-          const t = arr[row * 3 + col]
-          t.repeat.set(tr.repeatX, tr.repeatY)
-          t.offset.set(tr.offsetX, tr.offsetY)
+          const m = computeTileMatrix(win, { col, row }, info.rot || 0)
+          arr[row * 3 + col].matrix.set(m.a, m.b, m.tx, m.c, m.d, m.ty, 0, 0, 1)
         }
       }
     }

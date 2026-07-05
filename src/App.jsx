@@ -8,6 +8,7 @@ import {
   MAX_FILE_SIZE_MB,
   MIN_SCALE,
   MAX_SCALE,
+  MAX_ROTATION,
   validateImageFile,
 } from './faceImages.js'
 import './App.css'
@@ -40,6 +41,7 @@ export default function App() {
             scale: 1,
             panX: 0.5,
             panY: 0.5,
+            rot: 0,
           },
         }
       })
@@ -140,6 +142,19 @@ export default function App() {
                     data-crop={`${face}-panY`}
                     onChange={(e) => updateCrop(face, 'panY', Number(e.target.value))}
                   />
+                </label>
+                <label>
+                  旋轉
+                  <input
+                    type="range"
+                    min={-MAX_ROTATION}
+                    max={MAX_ROTATION}
+                    step="1"
+                    value={faceImages[face].rot}
+                    data-crop={`${face}-rot`}
+                    onChange={(e) => updateCrop(face, 'rot', Number(e.target.value))}
+                  />
+                  <span className="deg">{faceImages[face].rot}°</span>
                 </label>
               </div>
             )}
