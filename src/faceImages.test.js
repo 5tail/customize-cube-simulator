@@ -1,14 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { validateImageFile, MAX_FILE_SIZE, FACE_LABELS } from './faceImages.js'
+import { validateImageFile, MAX_FILE_SIZE, MAX_FILE_SIZE_MB, FACE_LABELS } from './faceImages.js'
 import { getFaceTile, FACE_ORDER, generateCubies } from './cubeGeometry.js'
 
 describe('validateImageFile 檔案驗證', () => {
-  it('接受 5MB 以內的 jpg', () => {
+  it('接受上限內的 jpg', () => {
     expect(validateImageFile({ type: 'image/jpeg', size: 1024 })).toEqual({ ok: true })
   })
 
-  it('接受 5MB 以內的 png', () => {
+  it('接受剛好等於上限的 png', () => {
     expect(validateImageFile({ type: 'image/png', size: MAX_FILE_SIZE })).toEqual({ ok: true })
+  })
+
+  it('上限是 8MB（使用者 2026-07-05 決定）', () => {
+    expect(MAX_FILE_SIZE_MB).toBe(8)
+    expect(MAX_FILE_SIZE).toBe(8 * 1024 * 1024)
   })
 
   it('拒絕其他圖片格式（如 gif）', () => {
@@ -17,10 +22,10 @@ describe('validateImageFile 檔案驗證', () => {
     expect(result.error).toContain('jpg')
   })
 
-  it('拒絕超過 5MB 的檔案', () => {
+  it('拒絕超過上限的檔案，錯誤訊息含上限數字', () => {
     const result = validateImageFile({ type: 'image/png', size: MAX_FILE_SIZE + 1 })
     expect(result.ok).toBe(false)
-    expect(result.error).toContain('5MB')
+    expect(result.error).toContain(`${MAX_FILE_SIZE_MB}MB`)
   })
 
   it('拒絕空值或缺欄位的輸入', () => {
