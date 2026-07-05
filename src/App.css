@@ -85,9 +85,16 @@
 }
 
 .crop-row {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
   margin: 0 0 8px 20px;
+}
+
+.crop-row .deg {
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .crop-row label {
