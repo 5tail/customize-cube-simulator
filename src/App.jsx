@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import RubiksCube from './RubiksCube.jsx'
 import { FACE_COLORS } from './cubeGeometry.js'
-import { FACE_LABELS, validateImageFile } from './faceImages.js'
+import { FACE_LABELS, MAX_FILE_SIZE_MB, validateImageFile } from './faceImages.js'
 import './App.css'
 
 export default function App() {
@@ -41,7 +41,7 @@ export default function App() {
     <div className="app">
       <div className="panel">
         <h1>客製化魔術方塊</h1>
-        <p className="hint">拖曳旋轉方塊，選圖片貼到各面（jpg/png，5MB 以內）</p>
+        <p className="hint">拖曳旋轉方塊，選圖片貼到各面（jpg/png，{MAX_FILE_SIZE_MB}MB 以內）</p>
         {Object.keys(FACE_LABELS).map((face) => (
           <div className="face-row" key={face}>
             <span

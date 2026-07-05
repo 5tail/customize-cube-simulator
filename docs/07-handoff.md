@@ -25,7 +25,8 @@
 
 **目前狀態**：
 - 骨架（PR #1）：已 merge、Pages 部署成功、使用者驗收通過。✅
-- 圖片上傳貼面：沙箱實跑 `npm test` **16/16 綠**、`npm run build` 成功；Playwright 端到端截圖驗證六面貼圖方向正確、gif 與超大檔正確被擋。PR 已開，等使用者 merge 後線上驗收。
+- 圖片上傳貼面（PR #2）：已 merge，使用者在 Pages 上驗收通過。✅
+- 檔案上限調整：使用者驗收後要求 5MB → **8MB**，已改（faceImages.js 常數＋docs/01/02 同步，Supabase 容量估算改為約 20–30 筆訂單）。
 - bundle 975KB（three.js 本體大），沿用 Session 1 判斷暫不處理。
 - docs/03 模型名稱與實際環境（claude-fable-5）不符：使用者已決定**先不動**。
 
