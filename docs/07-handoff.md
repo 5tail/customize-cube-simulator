@@ -4,6 +4,35 @@
 
 ---
 
+## Session 3 — 2026-07-05（首個 Code 網頁版 session：重建 Phase 1 骨架，開 PR）
+
+**做了什麼**：執行 Session 2「下一步」第 1 點。檢查結果：repo 只有制度文件，**沒有程式碼**，故依 handoff 規格重建 Phase 1 骨架並開 PR：
+- `package.json`（Vite + React 18 + three + @react-three/fiber + @react-three/drei + Vitest，全在 docs/02 白名單）
+- `src/cubeGeometry.js` 純函式資料層（27 顆、傳統六色、內側深色）＋ `src/cubeGeometry.test.js` 6 條測試
+- `src/RubiksCube.jsx`、`src/App.jsx`（OrbitControls 拖曳旋轉、關 pan）、`src/main.jsx`、`index.html`
+- `vite.config.js`（`base: './'` Pages 子路徑相容）
+- `.github/workflows/deploy.yml`（push main → 測試 → 建置 → 部署 Pages；PR 只測不部署）
+- `.gitignore`
+
+**目前狀態**：
+- 沙箱（Claude Code 網頁版，Node 22）實跑：`npm test` **6/6 綠**、`npm run build` **成功**（bundle 975KB，three.js 本體大，沿用 Session 1 判斷暫不處理）。
+- PR 已開（分支 `claude/handoff-session-2-phase-1-2ngi22`），等使用者 merge。
+- **CI 綠燈與 Pages 網址仍未確認**——要等 merge 進 main 後才會跑部署。使用者需先在 repo Settings → Pages 把 Source 設為 GitHub Actions。
+- 環境核對（docs/06 第 1 項）：本 session 實際模型為 `claude-fable-5`，與 docs/03 寫的 Sonnet/Opus 調度表不符 → 已向使用者回報，**docs/03 未改**，等使用者決定。
+
+**下一步**：
+1. 使用者 merge PR → 確認 Actions 綠燈 → Settings → Pages 選 GitHub Actions → 拿到 Pages 網址，回填到 README 或 handoff。
+2. 若使用者同意，修 docs/03 的模型名稱（提案：把調度表改成以介面實際可選模型為準）。
+3. 骨架驗收全過後，下個子任務：Phase 1 圖片上傳貼面（jpg/png ≤5MB、六面各自可不同圖、純瀏覽器端）。
+
+**未解問題 / 待使用者決定**：
+- docs/03 模型名稱與實際環境不符，如何修（見上）。
+- Supabase / Resend 帳號（Phase 2 才需要）。
+
+**本次教訓**：無踩坑。Session 1 的規格記錄夠細，重建一次到位。
+
+---
+
 ## Session 2 — 2026-07-05（工作模式切換：改用 Claude Code 網頁版）
 
 **做了什麼**：使用者（Pro 方案）決定把預設工作環境從 claude.ai 對話介面改為 **Claude Code 網頁版**（claude.ai/code，雲端沙箱，不碰本機）。經使用者同意重寫 docs/03（Code 網頁版為 A 節預設、chat 為 B 節備援）與 README（設定與日常流程改為 PR 工作流）。CLAUDE.md 刻意不動（防肥大）。
@@ -48,18 +77,4 @@
 
 ---
 
-## Session 0 — 2026-07-03（制度建立，在 claude.ai 對話介面由 Fable 5 產生）
-
-**做了什麼**：建立整套制度檔案（docs/00–09 ＋ CLAUDE.md ＋ README）。專案程式碼尚未開始。
-
-**目前狀態**：架構定案（docs/02）、規格定案（docs/01）。
-
-**下一步**：（已由 Session 1、2 接手，見上方。）
-
-**未解問題**：Supabase / Resend 帳號（Phase 2 才需要）；網站名稱、網域未定（先用 Pages 預設網址）。
-
-**本次教訓**：無（首個 session）。
-
----
-
-（下個 session 從這裡往上加新區塊）
+（下個 session 從這裡往上加新區塊；Session 0 已封存至 docs/handoff-archive.md）
