@@ -11,8 +11,8 @@ export const FACE_COLORS = {
   back: '#0051ba', // -z 藍
 }
 
-// 內側（看不到的面）用深色
-export const INNER_COLOR = '#1a1a1a'
+// 內側面顏色＝方塊之間縫隙的顏色（使用者 2026-07-05 定案：淺灰，不要黑）
+export const INNER_COLOR = '#cfcfcf'
 
 // 面的順序對齊 three.js BoxGeometry 的材質順序：+x, -x, +y, -y, +z, -z
 export const FACE_ORDER = ['right', 'left', 'up', 'down', 'front', 'back']
