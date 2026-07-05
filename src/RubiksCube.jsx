@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
 import { generateCubies, FACE_ORDER, getFaceTile } from './cubeGeometry.js'
 import { createRoundedBoxGeometry } from './roundedBoxGeometry.js'
+import { computeCropWindow, getTileTransform } from './faceImages.js'
 
 // 縫隙寬 = 1 - CUBIE_SIZE。使用者 2026-07-05 定案：很窄的縫（0.015）
 // ?size=0.95 之類的網址參數可暫時覆蓋方便比較；圓角半徑同理用 ?radius=
@@ -14,28 +15,8 @@ const cubieGeometry = createRoundedBoxGeometry(CUBIE_SIZE, EDGE_RADIUS)
 
 const cubies = generateCubies()
 
-/**
- * 單一貼紙的材質：該面有圖片時，取圖片九宮格中對應的一格當貼圖；
- * 沒圖片時維持素色。
- */
-function StickerMaterial({ slot, color, texture, tile }) {
-  const map = useMemo(() => {
-    if (!texture || !tile) return null
-    const t = texture.clone()
-    t.wrapS = THREE.ClampToEdgeWrapping
-    t.wrapT = THREE.ClampToEdgeWrapping
-    t.repeat.set(1 / 3, 1 / 3)
-    t.offset.set(tile.col / 3, tile.row / 3)
-    t.needsUpdate = true
-    return t
-  }, [texture, tile])
-
-  useEffect(() => {
-    return () => {
-      if (map) map.dispose()
-    }
-  }, [map])
-
+/** 單一貼紙的材質：有貼圖用貼圖，沒貼圖維持素色 */
+function StickerMaterial({ slot, color, map }) {
   return (
     <meshStandardMaterial
       // 材質從「無貼圖」變「有貼圖」時 shader 需要重編譯；
@@ -43,21 +24,25 @@ function StickerMaterial({ slot, color, texture, tile }) {
       key={map ? map.uuid : 'plain'}
       attach={`material-${slot}`}
       color={map ? '#ffffff' : color}
-      map={map}
+      map={map || null}
       roughness={0.3}
     />
   )
 }
 
 /**
- * faceImages: { front: objectURL, up: ..., ... }，值為 null/undefined 表示該面沒圖
+ * faceImages: { front: { url, imgW, imgH, scale, panX, panY }, ... }
+ * 沒選圖的面沒有 key。
  */
 export default function RubiksCube({ faceImages = {} }) {
   const [textures, setTextures] = useState({})
 
+  // 只有「圖片本身」換了才重新載入貼圖；拉滑桿（裁切參數）不觸發
+  const urlKey = FACE_ORDER.map((f) => faceImages[f]?.url || '').join('|')
+
   useEffect(() => {
     const loader = new THREE.TextureLoader()
-    const faces = FACE_ORDER.filter((f) => faceImages[f])
+    const faces = FACE_ORDER.filter((f) => faceImages[f]?.url)
     let cancelled = false
     const loaded = {}
 
@@ -66,7 +51,7 @@ export default function RubiksCube({ faceImages = {} }) {
         (face) =>
           new Promise((resolve) => {
             loader.load(
-              faceImages[face],
+              faceImages[face].url,
               (tex) => {
                 tex.colorSpace = THREE.SRGBColorSpace
                 loaded[face] = tex
@@ -85,7 +70,49 @@ export default function RubiksCube({ faceImages = {} }) {
       cancelled = true
       Object.values(loaded).forEach((t) => t.dispose())
     }
-  }, [faceImages])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlKey])
+
+  // 每面預先做好 9 個貼紙格的貼圖（同一張圖的 9 個視窗），只在換圖時重建
+  const tileTextures = useMemo(() => {
+    const result = {}
+    for (const face of FACE_ORDER) {
+      const tex = textures[face]
+      if (!tex) continue
+      result[face] = Array.from({ length: 9 }, () => {
+        const t = tex.clone()
+        t.wrapS = THREE.ClampToEdgeWrapping
+        t.wrapT = THREE.ClampToEdgeWrapping
+        t.needsUpdate = true
+        return t
+      })
+    }
+    return result
+  }, [textures])
+
+  useEffect(() => {
+    return () => {
+      Object.values(tileTextures).forEach((arr) => arr.forEach((t) => t.dispose()))
+    }
+  }, [tileTextures])
+
+  // 拉滑桿時只改各格貼圖的 offset/repeat（改 uniform，不重傳圖片、不重建材質）
+  useEffect(() => {
+    for (const face of FACE_ORDER) {
+      const arr = tileTextures[face]
+      const info = faceImages[face]
+      if (!arr || !info) continue
+      const win = computeCropWindow(info.imgW, info.imgH, info.scale, info.panX, info.panY)
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          const tr = getTileTransform(win, { col, row })
+          const t = arr[row * 3 + col]
+          t.repeat.set(tr.repeatX, tr.repeatY)
+          t.offset.set(tr.offsetX, tr.offsetY)
+        }
+      }
+    }
+  }, [tileTextures, faceImages])
 
   return (
     <group>
@@ -93,15 +120,10 @@ export default function RubiksCube({ faceImages = {} }) {
         <mesh key={cubie.position.join(',')} position={cubie.position} geometry={cubieGeometry}>
           {cubie.colors.map((color, i) => {
             const face = FACE_ORDER[i]
-            return (
-              <StickerMaterial
-                key={i}
-                slot={i}
-                color={color}
-                texture={textures[face] || null}
-                tile={getFaceTile(face, cubie.position)}
-              />
-            )
+            const tile = getFaceTile(face, cubie.position)
+            const map =
+              tile && tileTextures[face] ? tileTextures[face][tile.row * 3 + tile.col] : null
+            return <StickerMaterial key={i} slot={i} color={color} map={map} />
           })}
         </mesh>
       ))}
