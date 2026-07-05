@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
 import { generateCubies, FACE_ORDER, getFaceTile } from './cubeGeometry.js'
+import { createRoundedBoxGeometry } from './roundedBoxGeometry.js'
 
 const CUBIE_SIZE = 0.95 // 略小於 1，讓小方塊之間有縫，看得出是 27 顆
+// 小方塊邊緣圓角半徑（像真實魔方零件的微圓角）；可用 ?radius=0.08 暫時覆蓋方便比較
+const EDGE_RADIUS = Number(new URLSearchParams(window.location.search).get('radius')) || 0.08
+
+// 27 顆共用同一份幾何
+const cubieGeometry = createRoundedBoxGeometry(CUBIE_SIZE, EDGE_RADIUS)
 
 const cubies = generateCubies()
 
@@ -82,8 +88,7 @@ export default function RubiksCube({ faceImages = {} }) {
   return (
     <group>
       {cubies.map((cubie) => (
-        <mesh key={cubie.position.join(',')} position={cubie.position}>
-          <boxGeometry args={[CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE]} />
+        <mesh key={cubie.position.join(',')} position={cubie.position} geometry={cubieGeometry}>
           {cubie.colors.map((color, i) => {
             const face = FACE_ORDER[i]
             return (

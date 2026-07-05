@@ -27,6 +27,8 @@
 - 骨架（PR #1）：已 merge、Pages 部署成功、使用者驗收通過。✅
 - 圖片上傳貼面（PR #2）：已 merge，使用者在 Pages 上驗收通過。✅
 - 檔案上限調整：使用者驗收後要求 5MB → **8MB**，已改（faceImages.js 常數＋docs/01/02 同步，Supabase 容量估算改為約 20–30 筆訂單）。
+- 圓角方塊：使用者要求柔化 12 條外圍邊線。已實作 `src/roundedBoxGeometry.js`（自製、保留六面材質分組、零新依賴）＋ 4 條測試；**圓角半徑待使用者三選一**（0.04/0.08/0.13，截圖已給，目前預設 0.08，可用 `?radius=` 網址參數即時比較）。
+- **踩坑（已解）**：drei 的 `<RoundedBox>` 幾何不保留 BoxGeometry 的六面材質分組，六面各自上色/貼圖會全部亂掉（整顆變黑）。解法：自寫圓角幾何（clamp+外推標準演算法，見 roundedBoxGeometry.js 註解）。
 - bundle 975KB（three.js 本體大），沿用 Session 1 判斷暫不處理。
 - docs/03 模型名稱與實際環境（claude-fable-5）不符：使用者已決定**先不動**。
 
