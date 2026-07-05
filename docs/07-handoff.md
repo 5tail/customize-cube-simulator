@@ -31,18 +31,17 @@
 - 縫隙寬度：使用者要求「很近很近」→ **CUBIE_SIZE 0.95 → 0.985**（縫 0.015）。實測 0.995 與 0.985 視覺幾乎無差——剩餘縫寬主要來自 0.08 圓角形成的凹槽；若使用者還嫌寬，下一步是降圓角半徑（例 0.05），不是再縮縫。`?size=`、`?radius=` 網址參數保留供即時微調。
 - **踩坑（已解）**：drei 的 `<RoundedBox>` 幾何不保留 BoxGeometry 的六面材質分組，六面各自上色/貼圖會全部亂掉（整顆變黑）。解法：自寫圓角幾何（clamp+外推標準演算法，見 roundedBoxGeometry.js 註解）。
 - 縫隙縮窄（PR #5）：已 merge，使用者驗收通過。✅
-- **圖片縮放/位移裁切（Phase 1 最後一項）**：已完成，PR 已開。
-  - 純函式 `computeCropWindow`／`getTileTransform`（faceImages.js）：預設 cover 式正方形裁切（**長方形照片不再拉伸變形**）；縮放 1–3 倍、左右/上下位移。
-  - UI：有圖的面出現三個滑桿（縮放/左右/上下）。
-  - 效能設計：換圖才重載貼圖與重建 9 格 clone；拉滑桿只改 offset/repeat（uniform），不重傳 GPU。
-  - 測試 21 → 29 條；Playwright 驗證：橫圖預設置中不變形、縮放/位移滑桿有效。
+- **圖片縮放/位移裁切＋網站更名（PR #6）**：已 merge。✅
+  - 純函式 `computeCropWindow`／`getTileTransform`（faceImages.js）：預設 cover 式正方形裁切（**長方形照片不再拉伸變形**）；縮放 1–3 倍、左右/上下位移。UI 每面三滑桿。
+  - 效能設計：換圖才重載貼圖與重建 9 格 clone；拉滑桿只改 offset/repeat（uniform），不重傳 GPU。測試 21 → 29 條。
+  - 網站定名 **「小丸號客製方塊模擬器」**：index.html 分頁標題、App.jsx 畫面大標。
+- **全環境更名（本次）**：把人可讀的專案名稱統一為「小丸號客製方塊模擬器」——CLAUDE.md 標題、docs/01 標題（保留描述副標）、README 說明句。**技術識別名 `customize-cube-simulator`（package.json/package-lock.json name、repo 名、Pages 網址）刻意不動**：ASCII slug 不能放中文，且與 repo／Pages 網址綁定，改了無益有風險。
 - bundle 975KB（three.js 本體大），沿用 Session 1 判斷暫不處理。
 - docs/03 模型名稱與實際環境（claude-fable-5）不符：使用者已決定**先不動**。
 
 **下一步**：
-1. 使用者 merge 裁切 PR → Actions 綠燈 → Pages 驗收（三步驟見 PR 描述）。
-2. **Phase 1 總驗收**：docs/01 的驗收條件是「手機和電腦瀏覽器都能操作」——請使用者用手機實際開 Pages 操作一輪（旋轉、選圖、滑桿）。過了 Phase 1 就完工。
-3. 之後進 Phase 2（送件表單＋Supabase＋Resend，需使用者先開帳號＋Cloudflare Turnstile）。
+1. **Phase 1 總驗收**：docs/01 的驗收條件是「手機和電腦瀏覽器都能操作」——請使用者用手機實際開 Pages 操作一輪（旋轉、選圖、滑桿、看標題）。過了 Phase 1 就完工。
+2. 之後進 Phase 2（送件表單＋Supabase＋Resend，需使用者先開帳號＋Cloudflare Turnstile）。
 
 **未解問題 / 待使用者決定**：
 - Supabase / Resend 帳號（Phase 2 才需要）。
