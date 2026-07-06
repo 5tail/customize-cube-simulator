@@ -68,10 +68,16 @@
 - 客服連結＋手機版收合面板（PR #12）：已 merge。使用者已自行把 `pricing.json` 的 `contact.email`／`contact.lineUrl` 換成正式資料（原佔位值），並把潤滑選項文案改為「逐顆潤滑」、note 文字微調。✅
 - **選單外部連結（本次，使用者追加）**：面板頂端新增「回小丸號首頁」「回小丸號購物站」「小丸號蝦皮」三顆按鈕，只在展開狀態顯示。網址放 `pricing.json` 的新 `links` 區（home/shop/shopee，各有 label/url）。**⚠️ 三個網址目前都是佔位符（REPLACE_ME_HOME/SHOP/SHOPEE），等使用者提供真實網址或自行到 GitHub 網頁改**。測試 85 條全綠（新增 links 結構健全性檢查）。
 
+- 選單外部連結（PR #13）：已 merge。使用者已自行把 `links.home/shop/shopee` 的網址填成真實連結（maru.tw / store.maru.tw / 蝦皮）。✅
+- **自訂網域 custom.maru.tw（本次）**：使用者已有 maru.tw 網域，決定用子網域 `custom.maru.tw`（避免蓋掉根網域可能existing 的其他用途，如 go.maru.tw 短網址）。
+  - 新增 `public/CNAME`（內容 `custom.maru.tw`），Vite 的 `public/` 目錄會原樣複製進 `dist/`，build 後已確認 `dist/CNAME` 存在。`vite.config.js` 的 `base: './'` 用相對路徑，根網域和子路徑都適用，不需要改。
+  - README 加了完整 DNS 設定教學（CNAME 紀錄 host=`custom`、value=`5tail.github.io`）。
+  - **⚠️ 使用者要動手**：登入網域註冊商後台加那筆 CNAME DNS 紀錄；DNS 生效後到 repo Settings → Pages 確認 custom domain 顯示並勾選 Enforce HTTPS。這兩步模型無法代勞（帳號安全/外部系統）。
+
 **下一步**：
-1. 使用者 merge 本 PR → 驗收選單連結有顯示（先點開會是佔位頁面，正常）。
-2. **使用者要動手**：把 `src/pricing.json` 的 `links.home.url`／`links.shop.url`／`links.shopee.url` 換成真實網址。
-3. **全案總驗收**：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結、選單連結）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
+1. 使用者 merge 本 PR → 到網域註冊商加 DNS CNAME 紀錄 → 等生效 → GitHub Pages 設定勾 Enforce HTTPS。
+2. DNS 生效驗收：開 `https://custom.maru.tw` 應該看到網站（可能需要等待幾小時 DNS 傳播；若久候不通知，回報現象讓下個 session 排查，不要自行改 DNS 設定以外的東西）。
+3. **全案總驗收**（沿用前次）：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結、選單連結、新網址）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
 
 **未解問題 / 待使用者決定**：
 - Supabase / Resend 帳號（Phase 2 才需要）。
