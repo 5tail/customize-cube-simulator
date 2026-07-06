@@ -66,6 +66,19 @@ handoff 更新應該已包含在 PR 裡（docs/03 A-4）。若 session 中途中
 5. **客服連結**也在同一個檔案的 `contact` 區：`email` 是客服信箱、`lineUrl` 是 LINE 官方帳號的加好友網址（LINE Official Account 後台 → 加好友工具 → 網址）。
 6. **選單連結**在同一個檔案的 `links` 區（`home`/`shop`/`shopee`）：`label` 是按鈕文字、`url` 是要連去的網址，改網址直接貼上即可。
 
+## 換成自訂網址 custom.maru.tw（一次性設定，需要你本人動手）
+
+程式這邊已經設定好（`public/CNAME` 檔案 + GitHub Pages 會自動讀取），**還缺你在網域註冊商後台加一筆 DNS 紀錄**：
+
+1. 登入 maru.tw 網域註冊商的後台，找「DNS 設定」。
+2. 新增一筆 **CNAME 紀錄**：
+   - 主機名稱（Host/Name）：`custom`
+   - 類型（Type）：`CNAME`
+   - 值（Value/Target）：`5tail.github.io`
+3. 存檔。DNS 生效通常幾分鐘到幾小時（最久 24 小時）。
+4. 生效後到 repo 的 **Settings → Pages**，「Custom domain」應該會自動顯示 `custom.maru.tw` 並打勾；勾選 **Enforce HTTPS**（若還沒自動勾上）。
+5. 之後就能用 `https://custom.maru.tw` 開網站；原本的 `https://5tail.github.io/customize-cube-simulator/` 仍然可以用（GitHub 會自動轉址到新網址）。
+
 ## 什麼時候需要你本人動手（模型做不到的事）
 - 按 Merge（每個 PR 都要你過目才進 main）。
 - GitHub repo 設定（Public/Pages）、註冊 Supabase / Resend / Cloudflare 帳號（Phase 2 前）。
