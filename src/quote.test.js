@@ -89,6 +89,11 @@ describe('pricing.json 資料健全性（防店家改壞）', () => {
     }
   })
 
+  it('客服聯絡設定齊全（email 含 @、LINE 是網址）', () => {
+    expect(pricing.contact.email).toContain('@')
+    expect(pricing.contact.lineUrl).toMatch(/^https:\/\//)
+  })
+
   it('必須有 1 顆起的級距，所有數字為正', () => {
     expect(pricing.tiers[0].minQty).toBe(1)
     for (const t of pricing.tiers) expect(t.unitPrice).toBeGreaterThan(0)
