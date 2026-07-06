@@ -30,14 +30,14 @@
     },
     {
       "id": "lube",
-      "label": "潤滑（無塑膠袋封裝）",
+      "label": "逐顆潤滑（無塑膠袋封裝）",
       "perUnit": 10
     }
   ],
-  "note": "預設透明塑膠袋封裝（不要袋子亦不扣費）",
+  "note": "預設透明塑膠袋封裝（不要袋子也不會扣款）",
   "contact": {
     "說明": "客服連結。lineUrl 請換成你的 LINE 官方帳號網址（LINE Official Account 後台 → 加好友工具 → 網址，形如 https://lin.ee/xxxxxxx）。",
     "email": "throne.gm@gmail.com",
-    "lineUrl": "https://lin.ee/REPLACE_ME"
+    "lineUrl": "https://go.maru.tw/yt9r"
   }
 }
