@@ -42,12 +42,30 @@ export default function App() {
       .replace('T', '_')
       .replaceAll(':', '')
       .replaceAll('-', '')
-    // 用 Blob 而不是 dataURL：檔名才會生效，大圖也不受 dataURL 長度限制
-    canvas.toBlob((blob) => {
+    const filename = `小丸號方塊模擬_${stamp}.png`
+
+    canvas.toBlob(async (blob) => {
       if (!blob) return
+
+      // 手機上（尤其 LINE／Facebook 內建瀏覽器）用 <a download> 硬觸發下載，
+      // 常被攔截成「嘗試開啟外部程式」而擋下、存不了檔。
+      // 優先用系統原生分享面板（使用者可直接選「儲存照片」），這條路才是
+      // 手機瀏覽器設計來處理這種情境的正規管道。
+      const file = new File([blob], filename, { type: 'image/png' })
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: filename })
+          return
+        } catch (err) {
+          if (err?.name === 'AbortError') return // 使用者自己取消分享，不算失敗
+          // 分享失敗（不支援存檔案分享等）才往下走，改用下載方式
+        }
+      }
+
+      // 桌面瀏覽器（或不支援分享 API 的瀏覽器）：走原本的下載方式
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
-      link.download = `小丸號方塊模擬_${stamp}.png`
+      link.download = filename
       link.href = url
       document.body.appendChild(link) // Firefox 需要掛進頁面 download 屬性才生效
       link.click()
