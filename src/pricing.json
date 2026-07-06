@@ -2,18 +2,18 @@
   "說明": "改價錢只要改這個檔案的數字，commit 後網站約一分鐘自動更新。tiers = 數量級距（minQty 顆以上適用 unitPrice 單價）；options = 加購選項（perUnit 為每顆加價；exclusiveGroup 相同的選項只能勾一個）。",
   "currency": "NT$",
   "tiers": [
-    { "minQty": 1, "unitPrice": 420 },
-    { "minQty": 10, "unitPrice": 350 },
-    { "minQty": 30, "unitPrice": 250 },
-    { "minQty": 50, "unitPrice": 220 },
-    { "minQty": 100, "unitPrice": 195 },
-    { "minQty": 200, "unitPrice": 155 },
-    { "minQty": 300, "unitPrice": 140 },
-    { "minQty": 500, "unitPrice": 120 },
-    { "minQty": 800, "unitPrice": 98 },
+    { "minQty": 1, "unitPrice": 320 },
+    { "minQty": 10, "unitPrice": 255 },
+    { "minQty": 30, "unitPrice": 220 },
+    { "minQty": 50, "unitPrice": 190 },
+    { "minQty": 100, "unitPrice": 155 },
+    { "minQty": 200, "unitPrice": 130 },
+    { "minQty": 300, "unitPrice": 115 },
+    { "minQty": 500, "unitPrice": 100 },
+    { "minQty": 800, "unitPrice": 94 },
     { "minQty": 1000, "unitPrice": 86 },
-    { "minQty": 2000, "unitPrice": 79 },
-    { "minQty": 5000, "unitPrice": 60 }
+    { "minQty": 2000, "unitPrice": 70 },
+    { "minQty": 5000, "unitPrice": 56 }
   ],
   "options": [
     {
