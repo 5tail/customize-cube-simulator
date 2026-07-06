@@ -88,11 +88,15 @@
   - 事發經過：使用者直接在 GitHub 網頁改 `pricing.json` 價格（commit「改價格」），main 上的 CI **測試失敗**，build/deploy 被跳過，網站停留在**改價前的舊版本**（使用者回報「前台價格試算沒有更新」）。
   - 根因：**我的錯**——`quote.test.js` 把使用者最初給的具體價格數字（420/350/250…）寫死當測試期望值，而不是只驗證計算邏輯與 JSON 結構。這違背了「pricing.json 讓店家自由改價，不用找模型」的設計初衷。
   - 修法：`quote.test.js` 全面改用測試內建的假資料（mockPricing）驗證 findTier/nextTier/computeQuote/toggleOption 的**邏輯**；只有最下面的「資料健全性」區塊繼續驗證**真實 pricing.json 的結構**（遞增遞減、正數、必要欄位齊全），**不再檢查任何具體價格數字**。之後店家改多少價格、加減級距都不會讓測試變紅。
-  - 已用使用者當前的實際 `pricing.json`（含這次改的新價格）跑過 `npm test` 74/74 全綠、`npm run build` 成功。
+  - 已用使用者當前的實際 `pricing.json`（含這次改的新價格）跑過 `npm test` 74/74 全綠、`npm run build` 成功。PR #16 已 merge，CI 恢復綠燈。✅
+- **手機截圖分享修復（本次）**：使用者回報手機（LINE 內建瀏覽器）按「截圖下載」跳出「此網站正在嘗試開啟外部程式」警示並擋下，圖片沒存到。
+  - 根因：`<a download>` + blob URL 硬觸發下載，很多 App 內建瀏覽器（LINE/FB/IG）會把這個動作攔截成「嘗試交給外部程式處理」而擋下。
+  - 修法：`handleScreenshot` 改為**優先用 Web Share API**（`navigator.canShare`/`navigator.share` 帶 File），跳出系統原生分享面板讓使用者選「儲存照片」；不支援分享 API 的環境（多數桌面瀏覽器）才 fallback 回原本的 `<a download>` 方式。使用者主動取消分享（AbortError）視為正常，不當錯誤處理。
+  - 驗證方式：沙盒 Playwright 用 `addInitScript` 模擬「支援分享檔案」的瀏覽器環境，確認呼叫 `navigator.share` 且不誤觸發下載；另一頁不模擬分享 API，確認桌面回歸維持原本下載行為不變。**注意**：LINE 內建瀏覽器實際攔截行為無法在沙盒無頭瀏覽器重現，這是目前能做到的最佳驗證，真正的手機驗收仍需使用者實機測試。
 
 **下一步**：
-1. **使用者要儘快 merge 本 PR**——目前 main 的 CI 是紅的、Pages 沒有部署最新版本，merge 後才會恢復正常並帶出使用者改的新價格。
-2. Merge 後到 Actions 頁籤確認綠燈，開 `https://custom.maru.tw` 確認試算價格已更新成使用者最新設定的數字。
+1. 使用者 merge 本 PR → 到 Actions 確認綠燈。
+2. **關鍵驗收**：請使用者實際在**手機的 LINE 內建瀏覽器**（或其他 App 內開啟連結）裡按「截圖下載」，確認會跳出系統分享面板、選「儲存照片」後圖片確實存到手機相簿，不再出現「開啟外部程式」警示。也請在手機一般瀏覽器（非 App 內建）與電腦各測一次，確認都正常。
 3. **全案總驗收**（沿用前次，網址為 custom.maru.tw）：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結、選單連結）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
 
 **未解問題 / 待使用者決定**：
