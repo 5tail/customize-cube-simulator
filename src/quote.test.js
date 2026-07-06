@@ -2,86 +2,91 @@ import { describe, it, expect } from 'vitest'
 import { findTier, nextTier, computeQuote, toggleOption } from './quote.js'
 import pricing from './pricing.json'
 
-describe('findTier 級距選擇（用實際 pricing.json 驗證）', () => {
+// 邏輯測試一律用假資料，不依賴 pricing.json 裡的實際價格數字——
+// 店家改價格是這個檔案設計上就該自由做的事，測試不能因此變紅燈。
+// 真實 pricing.json 的驗證只做「結構健全性」，見檔案最下方。
+const mockPricing = {
+  tiers: [
+    { minQty: 1, unitPrice: 100 },
+    { minQty: 10, unitPrice: 80 },
+    { minQty: 50, unitPrice: 60 },
+  ],
+  options: [
+    { id: 'paper', label: '紙盒', perUnit: 5, exclusiveGroup: 'packaging' },
+    { id: 'plastic', label: '塑膠盒', perUnit: 8, exclusiveGroup: 'packaging' },
+    { id: 'lube', label: '潤滑', perUnit: 10 },
+  ],
+}
+
+describe('findTier 級距選擇', () => {
   const cases = [
-    [1, 420],
-    [9, 420],
-    [10, 350],
-    [29, 350],
-    [30, 250],
-    [49, 250],
-    [50, 220],
-    [100, 195],
-    [200, 155],
-    [300, 140],
-    [500, 120],
-    [800, 98],
-    [1000, 86],
-    [2000, 79],
-    [4999, 79],
-    [5000, 60],
-    [99999, 60],
+    [1, 100],
+    [9, 100],
+    [10, 80],
+    [49, 80],
+    [50, 60],
+    [9999, 60],
   ]
   for (const [qty, price] of cases) {
     it(`${qty} 顆 → 單價 ${price}`, () => {
-      expect(findTier(pricing.tiers, qty).unitPrice).toBe(price)
+      expect(findTier(mockPricing.tiers, qty).unitPrice).toBe(price)
     })
   }
 })
 
 describe('nextTier 下一級距提示', () => {
-  it('15 顆 → 下一級距是滿 30 顆', () => {
-    expect(nextTier(pricing.tiers, 15).minQty).toBe(30)
+  it('5 顆 → 下一級距是滿 10 顆', () => {
+    expect(nextTier(mockPricing.tiers, 5).minQty).toBe(10)
   })
 
-  it('已達最高級距（5000+）→ 沒有下一級', () => {
-    expect(nextTier(pricing.tiers, 5000)).toBeNull()
+  it('已達最高級距 → 沒有下一級', () => {
+    expect(nextTier(mockPricing.tiers, 50)).toBeNull()
   })
 })
 
 describe('computeQuote 試算', () => {
-  it('30 顆＋紙盒＋潤滑：單顆 250+5+10=265，總計 7950', () => {
-    const q = computeQuote(pricing, 30, ['paperBox', 'lube'])
-    expect(q.perUnit).toBe(265)
-    expect(q.total).toBe(7950)
+  it('30 顆＋紙盒＋潤滑：單顆 80+5+10=95，總計 2850', () => {
+    const q = computeQuote(mockPricing, 30, ['paper', 'lube'])
+    expect(q.perUnit).toBe(95)
+    expect(q.total).toBe(2850)
   })
 
-  it('1 顆無加購：420', () => {
-    const q = computeQuote(pricing, 1, [])
-    expect(q.perUnit).toBe(420)
-    expect(q.total).toBe(420)
+  it('1 顆無加購：100', () => {
+    const q = computeQuote(mockPricing, 1, [])
+    expect(q.perUnit).toBe(100)
+    expect(q.total).toBe(100)
   })
 
   it('塑膠盒 +8', () => {
-    expect(computeQuote(pricing, 10, ['plasticBox']).perUnit).toBe(358)
+    expect(computeQuote(mockPricing, 10, ['plastic']).perUnit).toBe(88)
   })
 
   it('非法數量（0、負數、NaN、小數）安全處理', () => {
-    expect(computeQuote(pricing, 0, []).qty).toBe(1)
-    expect(computeQuote(pricing, -5, []).qty).toBe(1)
-    expect(computeQuote(pricing, NaN, []).qty).toBe(1)
-    expect(computeQuote(pricing, 30.9, []).qty).toBe(30)
+    expect(computeQuote(mockPricing, 0, []).qty).toBe(1)
+    expect(computeQuote(mockPricing, -5, []).qty).toBe(1)
+    expect(computeQuote(mockPricing, NaN, []).qty).toBe(1)
+    expect(computeQuote(mockPricing, 30.9, []).qty).toBe(30)
   })
 })
 
 describe('toggleOption 勾選邏輯', () => {
-  it('紙盒與塑膠盒互斥：勾塑膠盒會取消紙盒', () => {
-    const next = toggleOption(pricing.options, ['paperBox'], 'plasticBox')
-    expect(next).toContain('plasticBox')
-    expect(next).not.toContain('paperBox')
+  it('同群組互斥：勾塑膠盒會取消紙盒', () => {
+    const next = toggleOption(mockPricing.options, ['paper'], 'plastic')
+    expect(next).toContain('plastic')
+    expect(next).not.toContain('paper')
   })
 
-  it('潤滑與盒裝可以並存', () => {
-    const next = toggleOption(pricing.options, ['paperBox'], 'lube')
-    expect(next.sort()).toEqual(['lube', 'paperBox'])
+  it('不同群組可以並存', () => {
+    const next = toggleOption(mockPricing.options, ['paper'], 'lube')
+    expect(next.sort()).toEqual(['lube', 'paper'])
   })
 
   it('再勾一次＝取消', () => {
-    expect(toggleOption(pricing.options, ['lube'], 'lube')).toEqual([])
+    expect(toggleOption(mockPricing.options, ['lube'], 'lube')).toEqual([])
   })
 })
 
-describe('pricing.json 資料健全性（防店家改壞）', () => {
+describe('pricing.json 資料健全性（防店家改壞格式，不檢查具體價格數字）', () => {
   it('級距按 minQty 遞增且單價遞減（量大更便宜）', () => {
     for (let i = 1; i < pricing.tiers.length; i++) {
       expect(pricing.tiers[i].minQty).toBeGreaterThan(pricing.tiers[i - 1].minQty)

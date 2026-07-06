@@ -83,15 +83,22 @@
   - 全部用絕對路徑 `/xxx`，因為現在網站是用自訂網域根路徑（不是 Pages 子路徑），與 vite `base: './'`（給 JS/CSS bundle 用）不衝突；已建置驗證 `dist/` 含全部靜態檔、Playwright 驗證所有 meta 標籤與連結值正確。
   - 測試 85 條全綠（未新增，這批是靜態資源與 HTML head，非邏輯）。
 
+- Favicon＋SEO（PR #15）：已 merge。✅
+- **緊急修復（本次）：改價格導致 CI 紅燈、部署卡住**。
+  - 事發經過：使用者直接在 GitHub 網頁改 `pricing.json` 價格（commit「改價格」），main 上的 CI **測試失敗**，build/deploy 被跳過，網站停留在**改價前的舊版本**（使用者回報「前台價格試算沒有更新」）。
+  - 根因：**我的錯**——`quote.test.js` 把使用者最初給的具體價格數字（420/350/250…）寫死當測試期望值，而不是只驗證計算邏輯與 JSON 結構。這違背了「pricing.json 讓店家自由改價，不用找模型」的設計初衷。
+  - 修法：`quote.test.js` 全面改用測試內建的假資料（mockPricing）驗證 findTier/nextTier/computeQuote/toggleOption 的**邏輯**；只有最下面的「資料健全性」區塊繼續驗證**真實 pricing.json 的結構**（遞增遞減、正數、必要欄位齊全），**不再檢查任何具體價格數字**。之後店家改多少價格、加減級距都不會讓測試變紅。
+  - 已用使用者當前的實際 `pricing.json`（含這次改的新價格）跑過 `npm test` 74/74 全綠、`npm run build` 成功。
+
 **下一步**：
-1. 使用者 merge 本 PR → Actions 綠燈後開 `https://custom.maru.tw`，瀏覽器分頁應顯示新 favicon（等角視圖小方塊圖示）。
-2. 分享這個網址到 LINE/Facebook 等平台，應該會顯示 og-image.png 的卡片預覽（可能需要平台快取更新，若不顯示可用該平台的「分享除錯工具」強制重新抓取，例如 Facebook Sharing Debugger）。
-3. **全案總驗收**（沿用前次，現在網址改為 custom.maru.tw）：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結、選單連結）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
+1. **使用者要儘快 merge 本 PR**——目前 main 的 CI 是紅的、Pages 沒有部署最新版本，merge 後才會恢復正常並帶出使用者改的新價格。
+2. Merge 後到 Actions 頁籤確認綠燈，開 `https://custom.maru.tw` 確認試算價格已更新成使用者最新設定的數字。
+3. **全案總驗收**（沿用前次，網址為 custom.maru.tw）：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結、選單連結）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
 
 **未解問題 / 待使用者決定**：
 - Supabase / Resend 帳號（Phase 2 才需要）。
 
-**本次教訓**：R3F 材質後掛貼圖不會自動重編 shader（見上方踩坑），已用 key 重建法解決；此模式已可套用到之後所有動態換圖功能。沙箱 Playwright 截圖驗證非常有用，單元測試驗不出的視覺問題（貼圖方向、shader 沒重編）都靠它抓到。
+**本次教訓**：**凡是「店家可自行編輯的設定檔」（pricing.json 等），測試只能驗證結構/邏輯，絕對不能寫死具體業務數值**——寫死等於每次店家改內容都會誤觸發紅燈，變成「防呆」反而變成「擋店家自己改東西」。這條寫進 docs/09-lessons.md。另外：R3F 材質後掛貼圖不會自動重編 shader（見上方舊踩坑），已用 key 重建法解決；沙箱 Playwright 截圖驗證非常有用，單元測試驗不出的視覺問題都靠它抓到。
 
 ---
 
