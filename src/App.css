@@ -115,6 +115,19 @@
   margin-bottom: 4px;
 }
 
+.site-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.site-links .btn {
+  text-decoration: none;
+  color: inherit;
+  font-size: 11px;
+}
+
 .actions {
   display: flex;
   gap: 8px;

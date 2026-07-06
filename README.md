@@ -64,6 +64,7 @@ handoff 更新應該已包含在 PR 裡（docs/03 A-4）。若 session 中途中
 3. 按 **Commit changes** → 約一分鐘後網站自動更新。
 4. 只改數字和文字，不要動引號、逗號、括號；改壞了測試會紅燈擋下來，不會上線。
 5. **客服連結**也在同一個檔案的 `contact` 區：`email` 是客服信箱、`lineUrl` 是 LINE 官方帳號的加好友網址（LINE Official Account 後台 → 加好友工具 → 網址）。
+6. **選單連結**在同一個檔案的 `links` 區（`home`/`shop`/`shopee`）：`label` 是按鈕文字、`url` 是要連去的網址，改網址直接貼上即可。
 
 ## 什麼時候需要你本人動手（模型做不到的事）
 - 按 Merge（每個 PR 都要你過目才進 main）。
