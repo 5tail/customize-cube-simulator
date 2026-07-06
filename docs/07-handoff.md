@@ -74,10 +74,19 @@
   - README 加了完整 DNS 設定教學（CNAME 紀錄 host=`custom`、value=`5tail.github.io`）。
   - **⚠️ 使用者要動手**：登入網域註冊商後台加那筆 CNAME DNS 紀錄；DNS 生效後到 repo Settings → Pages 確認 custom domain 顯示並勾選 Enforce HTTPS。這兩步模型無法代勞（帳號安全/外部系統）。
 
+- 自訂網域 custom.maru.tw（PR #14）：已 merge，使用者完成 Cloudflare DNS（灰雲 DNS only）＋ GitHub Pages 手動填 Custom domain 欄位＋SSL，**網域已上線**。✅（教訓：CNAME 檔案在 repo 不會自動填 GitHub Pages 設定欄位，需使用者手動輸入存檔一次觸發驗證，已寫進 README。）
+- **Favicon＋完整 SEO（本次）**：
+  - `public/favicon.svg`：程式產生的等角視圖 icon（白上/綠前/紅右三面＋3x3 格線），配色與座標**直接取自 cubeGeometry.js 的 FACE_COLORS**，是真實方塊的縮小版，非隨意設計。
+  - 用 Playwright 把同一份 SVG 渲染成 PNG：`favicon-32x32.png`、`apple-touch-icon.png`（180、留白邊、白底）、`icon-192/512.png`（給 manifest）、`og-image.png`（1200×630 社群分享卡，icon＋標題＋一句話說明）。
+  - `public/site.webmanifest`：PWA 基本資訊（name/icons/theme_color）。
+  - `index.html` 加：meta description、robots、canonical（`https://custom.maru.tw/`）、theme-color、favicon/apple-touch-icon/manifest 連結、完整 Open Graph＋Twitter Card 標籤（og:image 指向 og-image.png）。
+  - 全部用絕對路徑 `/xxx`，因為現在網站是用自訂網域根路徑（不是 Pages 子路徑），與 vite `base: './'`（給 JS/CSS bundle 用）不衝突；已建置驗證 `dist/` 含全部靜態檔、Playwright 驗證所有 meta 標籤與連結值正確。
+  - 測試 85 條全綠（未新增，這批是靜態資源與 HTML head，非邏輯）。
+
 **下一步**：
-1. 使用者 merge 本 PR → 到網域註冊商加 DNS CNAME 紀錄 → 等生效 → GitHub Pages 設定勾 Enforce HTTPS。
-2. DNS 生效驗收：開 `https://custom.maru.tw` 應該看到網站（可能需要等待幾小時 DNS 傳播；若久候不通知，回報現象讓下個 session 排查，不要自行改 DNS 設定以外的東西）。
-3. **全案總驗收**（沿用前次）：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結、選單連結、新網址）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
+1. 使用者 merge 本 PR → Actions 綠燈後開 `https://custom.maru.tw`，瀏覽器分頁應顯示新 favicon（等角視圖小方塊圖示）。
+2. 分享這個網址到 LINE/Facebook 等平台，應該會顯示 og-image.png 的卡片預覽（可能需要平台快取更新，若不顯示可用該平台的「分享除錯工具」強制重新抓取，例如 Facebook Sharing Debugger）。
+3. **全案總驗收**（沿用前次，現在網址改為 custom.maru.tw）：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結、選單連結）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
 
 **未解問題 / 待使用者決定**：
 - Supabase / Resend 帳號（Phase 2 才需要）。
