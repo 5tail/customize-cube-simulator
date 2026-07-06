@@ -42,8 +42,8 @@
   },
   "links": {
     "說明": "選單上的外部連結，label 是按鈕文字、url 是要連去的網址，改網址直接貼上即可。",
-    "home": { "label": "回小丸號首頁", "url": "https://REPLACE_ME_HOME" },
-    "shop": { "label": "回小丸號購物站", "url": "https://REPLACE_ME_SHOP" },
-    "shopee": { "label": "小丸號蝦皮", "url": "https://REPLACE_ME_SHOPEE" }
+    "home": { "label": "回小丸號首頁", "url": "https://maru.tw/" },
+    "shop": { "label": "回小丸號購物站", "url": "https://store.maru.tw/" },
+    "shopee": { "label": "小丸號蝦皮", "url": "https://shopee.tw/shop/2981469" }
   }
 }
