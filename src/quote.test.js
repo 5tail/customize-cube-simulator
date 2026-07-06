@@ -94,6 +94,16 @@ describe('pricing.json 資料健全性（防店家改壞）', () => {
     expect(pricing.contact.lineUrl).toMatch(/^https:\/\//)
   })
 
+  it('選單外部連結（首頁/購物站/蝦皮）各有 label 與 url', () => {
+    for (const key of ['home', 'shop', 'shopee']) {
+      const link = pricing.links[key]
+      expect(typeof link.label).toBe('string')
+      expect(link.label.length).toBeGreaterThan(0)
+      expect(typeof link.url).toBe('string')
+      expect(link.url.length).toBeGreaterThan(0)
+    }
+  })
+
   it('必須有 1 顆起的級距，所有數字為正', () => {
     expect(pricing.tiers[0].minQty).toBe(1)
     for (const t of pricing.tiers) expect(t.unitPrice).toBeGreaterThan(0)

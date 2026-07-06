@@ -39,5 +39,11 @@
     "說明": "客服連結。lineUrl 請換成你的 LINE 官方帳號網址（LINE Official Account 後台 → 加好友工具 → 網址，形如 https://lin.ee/xxxxxxx）。",
     "email": "cuber_shop@yahoo.com.tw",
     "lineUrl": "https://go.maru.tw/yt9r"
+  },
+  "links": {
+    "說明": "選單上的外部連結，label 是按鈕文字、url 是要連去的網址，改網址直接貼上即可。",
+    "home": { "label": "回小丸號首頁", "url": "https://REPLACE_ME_HOME" },
+    "shop": { "label": "回小丸號購物站", "url": "https://REPLACE_ME_SHOP" },
+    "shopee": { "label": "小丸號蝦皮", "url": "https://REPLACE_ME_SHOPEE" }
   }
 }

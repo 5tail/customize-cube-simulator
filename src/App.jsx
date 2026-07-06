@@ -121,6 +121,21 @@ export default function App() {
         </button>
         {panelOpen && (
         <div className="panel-body">
+        <div className="site-links">
+          {Object.values(pricing.links).map((link) =>
+            typeof link === 'object' && link.url ? (
+              <a
+                key={link.label}
+                className="btn"
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {link.label}
+              </a>
+            ) : null
+          )}
+        </div>
         <p className="hint">拖曳旋轉方塊，選圖片貼到各面（jpg/png，{MAX_FILE_SIZE_MB}MB 以內）</p>
         <div className="actions">
           <button

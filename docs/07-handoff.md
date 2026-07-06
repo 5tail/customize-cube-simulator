@@ -65,16 +65,13 @@
   - **踩坑（已解）**：跟手 1:1 時轉 90 度要拖 400+px，太硬手感差 → 加 DRAG_SENSITIVITY=2.5（約 175px 轉 90 度）。Playwright 實測兩次撥層疊加正確、空白處視角照常、打亂/復原迴歸通過。
 
 - 手動撥層（PR #11）：已 merge，使用者電腦版驗收通過。✅
-- **客服連結＋手機版收合面板（本次，使用者追加）**：
-  - 試算下方「點我諮詢客服小幫手」：Email＋LINE 兩顆連結按鈕，內容在 `pricing.json` 的 `contact` 區。**⚠️ lineUrl 目前是佔位連結 `https://lin.ee/REPLACE_ME`，等使用者換成真實 LINE 官方帳號網址**（README 有教學）。email 先填使用者 Gmail。
-  - 手機版（≤600px）面板**預設收合**成底部一條標題列（方塊完整可見），點展開/收合；電腦版預設展開也可收。
-  - 窄螢幕（直向）鏡頭自動拉遠（setLength 10.5），修掉方塊超出左右邊緣的問題。
-  - 測試 84 條全綠（新增 contact 設定健全性檢查）；手機/電腦視窗 Playwright 截圖驗證。
+- 客服連結＋手機版收合面板（PR #12）：已 merge。使用者已自行把 `pricing.json` 的 `contact.email`／`contact.lineUrl` 換成正式資料（原佔位值），並把潤滑選項文案改為「逐顆潤滑」、note 文字微調。✅
+- **選單外部連結（本次，使用者追加）**：面板頂端新增「回小丸號首頁」「回小丸號購物站」「小丸號蝦皮」三顆按鈕，只在展開狀態顯示。網址放 `pricing.json` 的新 `links` 區（home/shop/shopee，各有 label/url）。**⚠️ 三個網址目前都是佔位符（REPLACE_ME_HOME/SHOP/SHOPEE），等使用者提供真實網址或自行到 GitHub 網頁改**。測試 85 條全綠（新增 links 結構健全性檢查）。
 
 **下一步**：
-1. 使用者 merge 本 PR → 手機實際驗收（收合/展開、方塊不被擋、客服連結）。
-2. **使用者要動手**：把 `src/pricing.json` 的 `lineUrl` 換成真實 LINE 官方帳號網址。
-3. **全案總驗收**：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
+1. 使用者 merge 本 PR → 驗收選單連結有顯示（先點開會是佔位頁面，正常）。
+2. **使用者要動手**：把 `src/pricing.json` 的 `links.home.url`／`links.shop.url`／`links.shopee.url` 換成真實網址。
+3. **全案總驗收**：手機操作一輪（視角、撥層、選圖、四滑桿、打亂復原、試算、截圖、客服連結、選單連結）。全過＝目前規格功能全部完工，進入維護模式。撥層手感調 RubiksCube.jsx 的 DRAG_SENSITIVITY；重啟站內送件見 docs/01「已暫緩」區。
 
 **未解問題 / 待使用者決定**：
 - Supabase / Resend 帳號（Phase 2 才需要）。
