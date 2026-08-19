@@ -18,7 +18,7 @@
   "options": [
     {
       "id": "paperBox",
-      "label": "白色素面開窗紙盒",
+      "label": "白色素面紙盒",
       "perUnit": 5,
       "exclusiveGroup": "packaging"
     },
