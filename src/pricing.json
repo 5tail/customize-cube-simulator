@@ -2,7 +2,7 @@
   "說明": "改價錢只要改這個檔案的數字，commit 後網站約一分鐘自動更新。tiers = 數量級距（minQty 顆以上適用 unitPrice 單價）；options = 加購選項（perUnit 為每顆加價；exclusiveGroup 相同的選項只能勾一個）。",
   "currency": "NT$",
   "tiers": [
-    { "minQty": 1, "unitPrice": 320 },
+    { "minQty": 1, "unitPrice": 350 },
     { "minQty": 10, "unitPrice": 255 },
     { "minQty": 30, "unitPrice": 220 },
     { "minQty": 50, "unitPrice": 190 },
